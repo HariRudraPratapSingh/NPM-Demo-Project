@@ -1,0 +1,33 @@
+{
+  "name": "preflight-sentinel-demo",
+  "version": "1.0.0",
+  "description": "Prototype application demonstrating the 'env-checker' npm package for pre-flight environment validation and dev health monitoring",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "prestart": "env-check",
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "env:check": "env-check",
+    "env:check:json": "env-check --json",
+    "env:check:strict": "env-check --strict",
+    "env:sync": "env-check sync",
+    "env:sync:dry": "env-check sync --dry-run",
+    "env:init": "env-check init",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "keywords": [
+    "env-checker",
+    "environment-validator",
+    "preflight",
+    "prototype",
+    "healthcheck",
+    "express"
+  ],
+  "author": "Rangxr",
+  "license": "MIT",
+  "dependencies": {
+    "env-checker": "file:packages/env-checker",
+    "express": "^5.3.0"
+  }
+}

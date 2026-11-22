@@ -1,0 +1,7 @@
+node_modules/
+# dist/ - included for demo project standalone execution
+coverage/
+.DS_Store
+*.log
+.env
+!.env.example

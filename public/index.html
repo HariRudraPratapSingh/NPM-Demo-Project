@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PreFlight Sentinel — Powered by env-checker</title>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-card: #131b2e;
+      --bg-card-hover: #1a253f;
+      --border-color: #23314e;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-yellow: #fbbf24;
+      --accent-purple: #c084fc;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+    }
+
+    .logo-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .pkg-pill {
+      font-size: 11px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+
+    .btn-success {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-green);
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+    .btn-success:hover {
+      background: rgba(52, 211, 153, 0.25);
+    }
+
+    /* Metric Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-healthy { color: var(--accent-green); }
+    .status-alert { color: var(--accent-red); }
+    .status-warning { color: var(--accent-yellow); }
+
+    /* Playground / Fault Injection */
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fault-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-fault {
+      background: rgba(248, 113, 113, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+    .btn-fault:hover {
+      background: rgba(248, 113, 113, 0.2);
+      border-color: var(--accent-red);
+    }
+
+    /* Checks Grid */
+    .checks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .check-item {
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s ease;
+    }
+
+    .check-item.pass {
+      border-left: 4px solid var(--accent-green);
+    }
+    .check-item.fail {
+      border-left: 4px solid var(--accent-red);
+      background: rgba(248, 113, 113, 0.05);
+    }
+    .check-item.warn {
+      border-left: 4px solid var(--accent-yellow);
+    }
+
+    .check-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .check-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-icon {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .badge-category {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .check-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .badge-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .badge-pass { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-fail { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .badge-warn { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    .check-message {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: 26px;
+    }
+
+    .check-details-box {
+      margin-top: 6px;
+      margin-left: 26px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(248, 113, 113, 0.3);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #fca5a5;
+    }
+
+    .check-help-box {
+      margin-top: 4px;
+      margin-left: 26px;
+      font-size: 12px;
+      color: var(--accent-cyan);
+    }
+
+    /* Tabs & Editor */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+    }
+
+    .code-viewer {
+      width: 100%;
+      height: 200px;
+      background: #060911;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #e2e8f0;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .code-viewer:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+
+    /* CLI Cheatsheet */
+    .cli-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .cli-card {
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .cli-cmd {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-cyan);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .cli-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 13px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div class="logo-group">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-title">
+          <h1>PreFlight Sentinel <span class="pkg-pill">env-checker v1.0.0</span></h1>
+          <p>Real-Time Pre-Flight Environment Validator & Diagnostic Suite</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="runAudit()">
+          🔄 Run Audit
+        </button>
+        <button class="btn btn-success" onclick="syncEnv()">
+          ⚡ Auto-Sync .env
+        </button>
+        <button class="btn" onclick="restoreEnv()">
+          ↺ Restore Defaults
+        </button>
+      </div>
+    </header>
+
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">System Health</div>
+        <div class="metric-value" id="metric-health">—</div>
+        <div class="metric-sub" id="metric-health-sub">Auditing...</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Checks</div>
+        <div class="metric-value" id="metric-total">0</div>
+        <div class="metric-sub">Across 5 inspection categories</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Pass / Fail</div>
+        <div class="metric-value">
+          <span class="status-healthy" id="metric-pass">0</span> /
+          <span class="status-alert" id="metric-fail">0</span>
+        </div>
+        <div class="metric-sub"><span id="metric-warn">0</span> warnings</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Audit Latency</div>
+        <div class="metric-value" id="metric-duration">0<span style="font-size:16px;">ms</span></div>
+        <div class="metric-sub">High-efficiency non-blocking audit</div>
+      </div>
+    </div>
+
+    <!-- Fault Injection Playground -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          🧪 Interactive Fault Injection Lab
+          <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Test how env-checker intercepts common failures)</span>
+        </div>
+      </div>
+      <div class="fault-buttons">
+        <button class="btn btn-fault" onclick="injectFault('missing-db')">
+          ✖ Delete DATABASE_URL
+        </button>
+        <button class="btn btn-fault" onclick="injectFault('invalid-port-type')">
+          ✖ Corrupt PORT (Set to "three-thousand")
+        </button>
+        <button class="btn btn-fault" onclick="injectFault('invalid-db-url')">
+          ✖ Corrupt DB Protocol (invalid URL)
+        </button>
+        <button class="btn btn-fault" onclick="injectFault('invalid-email')">
+          ✖ Invalid ADMIN_EMAIL Format
+        </button>
+        <button class="btn btn-fault" onclick="injectFault('invalid-boolean')">
+          ✖ Corrupt ENABLE_ANALYTICS (not boolean)
+        </button>
+        <button class="btn btn-fault" onclick="injectFault('empty-jwt')">
+          ✖ Empty JWT_SECRET Value
+        </button>
+        <button class="btn btn-success" onclick="syncEnv()">
+          ⚡ Heal with 'env-check sync'
+        </button>
+        <button class="btn" onclick="restoreEnv()">
+          ↺ Restore Clean Config
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Checks Details -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          📋 Pre-Flight Verification Results
+        </div>
+        <div id="last-updated" style="font-size:12px; color:var(--text-muted);"></div>
+      </div>
+      <div class="checks-list" id="checks-list">
+        <div style="padding:20px; text-align:center; color:var(--text-muted);">Loading diagnostics...</div>
+      </div>
+    </div>
+
+    <!-- Configuration Viewer & Editor -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          📝 Configuration Inspector & Live Editor
+        </div>
+        <button class="btn btn-primary" id="save-env-btn" onclick="saveActiveEnv()">
+          💾 Save & Re-audit .env
+        </button>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('env')">Active .env</button>
+        <button class="tab-btn" onclick="switchTab('example')">Template .env.example</button>
+        <button class="tab-btn" onclick="switchTab('config')">Enforcement Schema (.envcheck.json)</button>
+      </div>
+
+      <textarea id="file-editor" class="code-viewer" spellcheck="false"></textarea>
+    </div>
+
+    <!-- CLI Cheatsheet -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          ⌨️ Terminal & CI/CD Integration
+        </div>
+      </div>
+      <div class="cli-grid">
+        <div class="cli-card">
+          <div class="cli-cmd">npm run env:check</div>
+          <div class="cli-desc">Run human-friendly terminal pre-flight audit report</div>
+        </div>
+        <div class="cli-card">
+          <div class="cli-cmd">npm run env:check:json</div>
+          <div class="cli-desc">Output machine-readable JSON for CI/CD pipelines & scripts</div>
+        </div>
+        <div class="cli-card">
+          <div class="cli-cmd">npm run env:check:strict</div>
+          <div class="cli-desc">Strict mode: treats warnings as errors (exit code 1)</div>
+        </div>
+        <div class="cli-card">
+          <div class="cli-cmd">npm run env:sync</div>
+          <div class="cli-desc">Automatically append missing keys from .env.example into .env</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let filesData = {};
+    let activeTab = 'env';
+
+    function showToast(msg, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, duration);
+    }
+
+    async function loadFiles() {
+      try {
+        const res = await fetch('/api/files');
+        filesData = await res.json();
+        updateEditor();
+      } catch (err) {
+        console.error("Failed to load files", err);
+      }
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['env', 'example', 'config'][i] === tab);
+      });
+      document.getElementById('save-env-btn').style.display = tab === 'env' ? 'inline-flex' : 'none';
+      updateEditor();
+    }
+
+    function updateEditor() {
+      const editor = document.getElementById('file-editor');
+      if (activeTab === 'env') {
+        editor.value = filesData.env || '';
+        editor.readOnly = false;
+      } else if (activeTab === 'example') {
+        editor.value = filesData.example || '';
+        editor.readOnly = true;
+      } else {
+        editor.value = filesData.config || '';
+        editor.readOnly = true;
+      }
+    }
+
+    async function saveActiveEnv() {
+      const content = document.getElementById('file-editor').value;
+      try {
+        const res = await fetch('/api/files/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast("✔ Saved .env and refreshed audit");
+          filesData.env = content;
+          renderAudit(data.audit);
+        }
+      } catch (err) {
+        showToast("✖ Error saving file: " + err.message);
+      }
+    }
+
+    async function runAudit() {
+      try {
+        const res = await fetch('/api/audit');
+        const audit = await res.json();
+        renderAudit(audit);
+        showToast("✔ Pre-flight audit completed in " + audit.durationMs + "ms");
+      } catch (err) {
+        showToast("✖ Failed to fetch audit: " + err.message);
+      }
+    }
+
+    function renderAudit(audit) {
+      // Metrics
+      const isHealthy = audit.summary.failed === 0;
+      const healthEl = document.getElementById('metric-health');
+      healthEl.textContent = isHealthy ? 'PASS' : 'FAIL';
+      healthEl.className = 'metric-value ' + (isHealthy ? 'status-healthy' : 'status-alert');
+      document.getElementById('metric-health-sub').textContent = isHealthy ? 'Environment verified' : 'Disparities detected';
+
+      document.getElementById('metric-total').textContent = audit.summary.total;
+      document.getElementById('metric-pass').textContent = audit.summary.passed;
+      document.getElementById('metric-fail').textContent = audit.summary.failed;
+      document.getElementById('metric-warn').textContent = audit.summary.warnings;
+      document.getElementById('metric-duration').innerHTML = audit.durationMs + '<span style="font-size:16px;">ms</span>';
+
+      document.getElementById('last-updated').textContent = "Audited at " + new Date(audit.timestamp).toLocaleTimeString();
+
+      // Check items list
+      const listEl = document.getElementById('checks-list');
+      listEl.innerHTML = '';
+
+      audit.checks.forEach(check => {
+        const item = document.createElement('div');
+        item.className = 'check-item ' + check.status;
+
+        const icon = check.status === 'pass' ? '✔' : check.status === 'warn' ? '▲' : '✖';
+        const badgeClass = check.status === 'pass' ? 'badge-pass' : check.status === 'warn' ? 'badge-warn' : 'badge-fail';
+
+        let detailsHtml = '';
+        if (check.details && check.details.length > 0) {
+          detailsHtml = `<div class="check-details-box">${check.details.map(d => `<div>• ${escapeHtml(d)}</div>`).join('')}</div>`;
+        }
+
+        let helpHtml = '';
+        if (check.help) {
+          helpHtml = `<div class="check-help-box">💡 ${escapeHtml(check.help)}</div>`;
+        }
+
+        item.innerHTML = `
+          <div class="check-row">
+            <div class="check-title-group">
+              <span class="badge-icon ${check.status === 'pass' ? 'status-healthy' : 'status-alert'}">${icon}</span>
+              <span class="badge-category">${check.category}</span>
+              <span class="check-title">${escapeHtml(check.title)}</span>
+            </div>
+            <span class="badge-status ${badgeClass}">${check.status}</span>
+          </div>
+          <div class="check-message">${escapeHtml(check.message)}</div>
+          ${detailsHtml}
+          ${helpHtml}
+        `;
+
+        listEl.appendChild(item);
+      });
+    }
+
+    async function injectFault(type) {
+      try {
+        const res = await fetch(`/api/fault/${type}`, { method: 'POST' });
+        const data = await res.json();
+        showToast("⚡ Fault injected: " + type);
+        renderAudit(data.audit);
+        await loadFiles();
+      } catch (err) {
+        showToast("✖ Error injecting fault: " + err.message);
+      }
+    }
+
+    async function syncEnv() {
+      try {
+        const res = await fetch('/api/sync', { method: 'POST' });
+        const data = await res.json();
+        showToast("⚡ Synchronized .env via 'env-checker'");
+        renderAudit(data.audit);
+        await loadFiles();
+      } catch (err) {
+        showToast("✖ Sync failed: " + err.message);
+      }
+    }
+
+    async function restoreEnv() {
+      try {
+        const res = await fetch('/api/restore', { method: 'POST' });
+        const data = await res.json();
+        showToast("↺ Restored environment to clean baseline");
+        renderAudit(data.audit);
+        await loadFiles();
+      } catch (err) {
+        showToast("✖ Restore failed: " + err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Initialize on load
+    runAudit();
+    loadFiles();
+  </script>
+</body>
+</html>

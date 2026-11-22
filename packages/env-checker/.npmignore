@@ -1,0 +1,6 @@
+# Whitelist approach: only ship dist, readme, license
+*
+!dist/**
+!README.md
+!LICENSE
+!package.json

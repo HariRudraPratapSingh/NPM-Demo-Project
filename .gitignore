@@ -1,0 +1,5 @@
+node_modules/
+packages/env-checker/node_modules/
+.DS_Store
+*.log
+.npm/

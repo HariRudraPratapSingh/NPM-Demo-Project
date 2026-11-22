@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/HariRudraPratapSingh/NPM-Package-/main/schema.json",
+  "node": ">=18.0.0",
+  "packageManager": "npm",
+  "env": {
+    "files": [".env"],
+    "exampleFiles": [".env.example"],
+    "required": [
+      "PORT",
+      "DATABASE_URL",
+      "JWT_SECRET",
+      "ADMIN_EMAIL",
+      "ENABLE_ANALYTICS"
+    ],
+    "types": {
+      "PORT": "number",
+      "DATABASE_URL": "url",
+      "JWT_SECRET": "string",
+      "ADMIN_EMAIL": "email",
+      "ENABLE_ANALYTICS": "boolean"
+    },
+    "allowEmpty": false
+  },
+  "binaries": [
+    { "name": "node", "version": ">=18.0.0" },
+    { "name": "git", "version": ">=2.0.0" },
+    {
+      "name": "docker",
+      "optional": true,
+      "message": "Docker is optional for containerized database services"
+    }
+  ],
+  "ports": [
+    {
+      "port": 3000,
+      "description": "PreFlight Sentinel Web UI",
+      "expectedStatus": "free"
+    }
+  ]
+}

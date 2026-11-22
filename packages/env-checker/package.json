@@ -1,0 +1,64 @@
+{
+  "name": "env-checker",
+  "version": "1.0.0",
+  "description": "Production-grade pre-flight environment validator: check Node.js versions, .env files, system binaries, and port availability.",
+  "keywords": [
+    "cli",
+    "env",
+    "environment",
+    "dotenv",
+    "preflight",
+    "validator",
+    "developer-experience",
+    "dx",
+    "healthcheck"
+  ],
+  "author": "Antigravity <support@antigravity.dev>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "env-check": "./dist/cli.js",
+    "envcheck": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HariRudraPratapSingh/NPM-Package-.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HariRudraPratapSingh/NPM-Package-/issues"
+  },
+  "homepage": "https://github.com/HariRudraPratapSingh/NPM-Package-#readme",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "commander": "^15.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "eslint": "^10.15.0",
+    "prettier": "^3.10.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^4.1.12"
+  }
+}
